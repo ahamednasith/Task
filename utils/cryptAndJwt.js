@@ -1,14 +1,13 @@
-const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const moment = require('moment');
-const db = require('../models/index');
-const User = db.user;
-const Otp = db.otp;
+const User = require('../models/user.model');
+const Otp = require('../models/otp.models');
 
 const verifyToken = (req,res,next) => {
-    let token = req.headers["x-acces-token"];
-    if(token) {
-        const tokenPart = token.split(" ");
+    let token = req.headers["x-access-token"];
+    if(token){
+        tokenPart = token.split(" ");
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
         const userId = decodedToken.userId;
@@ -16,18 +15,19 @@ const verifyToken = (req,res,next) => {
             if(user){
                 req.user = user;
                 const date = user.loginDate;
-                req.loginDate = moment(date).format('YYYY-MM-DD HH:mm;ss');
+                req.loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
                 jwt.verify(token,req.loginDate,(err,decoded) => {
                     if(err){
-                        return res.status(400).json({message:"Unauthorized",err});
+                        return res.stauts(404).json({message:"Unauthorized"});
                     }
                     user = decoded;
                     next();
                 });
             }
         });
-    } else {
-        return res.status(402).json({message:"Access Denied"});
+    }
+    else{
+        return res.stauts(401).json({message:"Access denied"});
     }
 };
 
@@ -35,9 +35,9 @@ const algorithm = "aes-256-cbc";
 const key = "B374A26A71490437AA024E4FADD5B49F";
 const iv = "7E892875A42C59A3";
 
-function encrypt(value) {
+function encrypt(value){
     let cipher = crypto.createCipheriv(algorithm,key,iv);
-    let encrypted  = cipher.update(String(value),'utf-8','hex');
+    let encrypted = cipher.update(value,'utf-8','hex');
     encrypted += cipher.final('hex');
     return encrypted;
 }
@@ -49,4 +49,5 @@ function decrypt(value){
     return decrypted;
 }
 
-module.exports = { verifyToken,encrypt,decrypt };
+module.exports ={verifyToken,encrypt,decrypt};
+

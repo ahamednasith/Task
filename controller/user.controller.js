@@ -1,8 +1,10 @@
 const db = require('../models');
 const { Sequelize,Op } = require('sequelize');
-const dateTime =require('date-and-time');
-const {encrypt,decrypt} = require('../utils/cryptAndJwt');
+const dateTime = require('date-and-time');
 const jwt = require('jsonwebtoken');
+const { encrypt,decrypt} = require('../utils/cryptAndJwt');
+const multer = require('multer');
+const path = require('path');
 const User = db.user;
 const Otp = db.otp;
 
@@ -51,7 +53,35 @@ const verifyOtp = async (req,res,next) => {
     if(!otp || currentTime >otp.expiredAt){
         return res.status(404).json("OTP Has Expired")
     }
-    return res.status(200).json("OTP Has verified");
+    const userId = Math.floor(10000000 + Math.random() * 90000000);
+    const name = req.body.name;
+    const age = req.body.age;
+    const signUpDate = new Date();
+    const loginDate = dateTime.format(new Date(),'YYYY-MM-DD HH:mm:ss');
+    const user = await User.create({
+        userId,
+        name,
+        age,
+        signUpDate,
+        loginDate
+    });
+    var token = jwt.sign({userId:user.userId},loginDate);
+    return res.status(200).send({message:"Profile updated",accestoken:token});
+}
+const storage = multer.diskStorage({
+    destination:'./public/images',
+    filename:(req,file,cb) => {
+        return cb(null,file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+    }
+});
+const upload = multer({
+    storage:storage,
+}).single('profile');
+
+const uploadProfile = async(req,res,next) =>{
+    const profile = req.body.path;
+    const user = await User.create(profile);
+    return res.status(200).json({messagE:"PRofile Picture Uploaded"});
 }
 
-module.exports = { otpGenerate,verifyOtp }
+module.exports = {otpGenerate,verifyOtp,upload,uploadProfile};

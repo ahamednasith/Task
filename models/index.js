@@ -8,12 +8,12 @@ const sequelize = new Sequelize(dbConfig.DB,dbConfig.USER,dbConfig.PASSWORD,{
     timezone:'+05:30'
 });
 
-const db ={}
+const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.otp = require('./models')(sequelize,DataTypes);
-db.user = require('./models')(sequelize,DataTypes);
+db.user = require('./user.model')(sequelize,DataTypes);
+db.otp = require('./otp.models')(sequelize,DataTypes);
 
 db.sequelize.sync();
 
