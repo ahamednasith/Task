@@ -13,23 +13,20 @@ const verifyToken = (req,res,next) => {
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
         const userId = decodedToken.id;
-        console.log(userId)
         User.findOne({where:{id:userId}}).then(user => {
             if(user){
                 req.user = user;
-                console.log(req.user);
                 const date = user.loginDate;
                 req.loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
-                console.log(req.loginDate);
                 jwt.verify(token,req.loginDate,(err,decoded) => {
                     if(err){
-                        return res.stauts(404).json({message:"Unauthorized"});
+                        return res.status(404).json({message:"Unauthorized"});
                     }
                     user = decoded;
                     next();
                 });
             } else {
-                return res.stauts(401).json({message:"Access denied"});
+                return res.status(401).json({message:"Access denied"});
             }        
         });
     }
@@ -37,6 +34,7 @@ const verifyToken = (req,res,next) => {
         return res.status(401).json({message:"Access denied"});
     }
 };
+
 
 const algorithm = "aes-256-cbc";
 const key = "B374A26A71490437AA024E4FADD5B49F";
