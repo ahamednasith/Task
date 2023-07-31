@@ -81,8 +81,7 @@ const upload = multer({
 }).single('profile'); 
 
 const uploadProfile = async (req, res, next) => {
-    const pictures = req.body.path; 
-    const imgsrc = `http://localhost:7373/${pictures}`;
+    const imgsrc = `http://localhost:7373/${req.file.path}`;
     const user = await User.update({ picture: imgsrc }, { where: { id: req.user.id } });
     return res.status(200).json({ message: "Profile Picture Uploaded" });
 }
