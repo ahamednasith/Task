@@ -8,6 +8,8 @@ router.post('/otp',joi.otpValidate,userController.otpGenerate);
 
 router.get('/otp',userController.verifyOtp);
 
-router.post('image',jwt.verifyToken,userController.upload,userController.uploadProfile)
+router.get('/verify',jwt.verifyToken,userController.getProfile);
+
+router.put('/image',jwt.verifyToken,userController.upload,userController.uploadProfile)
 
 module.exports = router;

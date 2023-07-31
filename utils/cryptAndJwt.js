@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const moment = require('moment');
-const User = require('../models/user.model');
-const Otp = require('../models/otp.models');
+const  db = require('../models/index');
+const User = db.user;
+console.log(User);
+const Otp = db.otp;
 
 const verifyToken = (req,res,next) => {
     let token = req.headers["x-access-token"];
@@ -10,12 +12,15 @@ const verifyToken = (req,res,next) => {
         tokenPart = token.split(" ");
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
-        const userId = decodedToken.userId;
-        User.findOne({where:{userId:userId}}).then(user => {
+        const userId = decodedToken.id;
+        console.log(userId)
+        User.findOne({where:{id:userId}}).then(user => {
             if(user){
                 req.user = user;
+                console.log(req.user);
                 const date = user.loginDate;
                 req.loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
+                console.log(req.loginDate);
                 jwt.verify(token,req.loginDate,(err,decoded) => {
                     if(err){
                         return res.stauts(404).json({message:"Unauthorized"});
@@ -23,11 +28,13 @@ const verifyToken = (req,res,next) => {
                     user = decoded;
                     next();
                 });
-            }
+            } else {
+                return res.stauts(401).json({message:"Access denied"});
+            }        
         });
     }
     else{
-        return res.stauts(401).json({message:"Access denied"});
+        return res.status(401).json({message:"Access denied"});
     }
 };
 

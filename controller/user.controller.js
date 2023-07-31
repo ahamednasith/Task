@@ -12,6 +12,7 @@ const otpGenerate = async(req,res,next) => {
     const userId = Math.floor(10000000 + Math.random() * 90000000);
     const phoneNumber = encrypt(String(req.body.phoneNumber));
     const autoOtp = Math.floor(100000 + Math.random() * 900000);
+    console.log(autoOtp);
     const currentTime = new Date();
     const count = await Otp.count({
         where:{
@@ -65,23 +66,41 @@ const verifyOtp = async (req,res,next) => {
         signUpDate,
         loginDate
     });
-    var token = jwt.sign({userId:user.userId},loginDate);
+    var token = jwt.sign({id:user.id},loginDate);
     return res.status(200).send({message:"Profile updated",accestoken:token});
 }
 const storage = multer.diskStorage({
-    destination:'./public/images',
-    filename:(req,file,cb) => {
-        return cb(null,file.fieldname + '_' + Date.now() + path.extname(file.originalname));
+    destination: './public/images',
+    filename: (req, file, cb) => {
+        return cb(null, file.fieldname + '_' + Date.now() + path.extname(file.originalname));
     }
 });
-const upload = multer({
-    storage:storage,
-}).single('profile');
 
-const uploadProfile = async(req,res,next) =>{
-    const profile = req.body.path;
-    const user = await User.create(profile);
-    return res.status(200).json({messagE:"PRofile Picture Uploaded"});
+const upload = multer({
+    storage: storage,
+}).single('profile'); 
+
+const uploadProfile = async (req, res, next) => {
+    const pictures = req.body.path; 
+    const imgsrc = `http://localhost:7373/${pictures}`;
+    const user = await User.update({ picture: imgsrc }, { where: { id: req.user.id } });
+    return res.status(200).json({ message: "Profile Picture Uploaded" });
 }
 
-module.exports = {otpGenerate,verifyOtp,upload,uploadProfile};
+const getProfile = async(req,res) => {
+    const data ={
+        id:req.user.id,
+        name:req.user.name,
+        age:req.user.age,
+        picutre:req.user.picture,
+        signUpDate:req.user.signUpDate,
+        loginDate:req.user.loginDate
+    }
+    return res.status(200).json(data);
+}
+
+
+
+
+
+module.exports = {otpGenerate,verifyOtp,upload,uploadProfile,getProfile};
