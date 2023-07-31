@@ -1,8 +1,5 @@
 module.exports = (sequelize,DataTypes) => {
     const Otp = sequelize.define('otp',{
-        userId:{
-            type: DataTypes.INTEGER
-        },
         phoneNumber:{
             type:DataTypes.STRING
         },
