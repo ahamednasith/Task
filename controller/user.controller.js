@@ -89,7 +89,7 @@ const signUp = async (req,res,next) => {
 }
 
 const uploadProfile = async(req,res,next) => {
-    picture = `http://localhost:7373/public/images ${req.file.path}`;
+    picture = `http://localhost:7373/ ${req.file.path}`;
     const user = await User.update({
         picture:picture
     },{
@@ -99,7 +99,8 @@ const uploadProfile = async(req,res,next) => {
     });
     return res.status(200).json({
         statuscode:200,
-        message:"Profile Picture Uploaded"
+        message:"Profile Picture Uploaded",
+        data:req.user
     });
 }
 
