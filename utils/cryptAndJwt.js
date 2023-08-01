@@ -9,7 +9,7 @@ const generateToken =(userId,loginDate)=> {
     console.log(userId);
     console.log(loginDate)
     
-    var token =jwt.sign({id:userId},loginDate);
+    var token =jwt.sign({userId:userId},loginDate);
     return token;
     
 };
@@ -20,26 +20,27 @@ const verifyToken = (req,res,next) => {
         tokenPart = token.split(" ");
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
-        const userId = decodedToken.id;
+        const userId = decodedToken.userId;
         console.log(userId)
-        const user = User.findOne({where:{id:userId}})
+        User.findOne({where:{userId:userId}}).then(user =>{
+        console.log(user);
             if(user){
-                req.user = user;
-                console.log(req.user)
                 const date = user.loginDate;
-                req.loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
-                console.log(req.loginDate)
-                jwt.verify(token,req.loginDate,(err,decoded) => {
+                console.log(date);
+                const loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
+                console.log(loginDate)
+                jwt.verify(token,loginDate,(err,decoded) => {
                     if(err){
                         return res.status(404).json({message:"Unauthorized"});
                     }
-                    user = decoded;
+                    req.user = decoded;
                     next();
                 });
 
             } else {
                 return res.status(401).json({message:"Access denied"});
             }
+        });
     }
     else{
         return res.status(401).json({message:"Access denied"});

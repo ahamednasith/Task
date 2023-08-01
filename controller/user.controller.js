@@ -95,7 +95,7 @@ const uploadProfile = async(req,res,next) => {
         picture:picture
     },{
         where:{
-            id:req.user.id
+            userId:req.user.userId
         }
     });
     return res.status(200).json({
