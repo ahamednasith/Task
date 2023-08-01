@@ -17,7 +17,7 @@ const upload = multer({
     storage: storage,
 }).single('profile'); 
 
-router.post('/signup',joi.otpValidate,removeOtp,userController.signUp,jwt.generateToken);
+router.post('/signup',joi.otpValidate,userController.signUp,jwt.generateToken);
 
 router.put('/profile',jwt.verifyToken,upload,userController.uploadProfile);
 

@@ -3,6 +3,7 @@ const { Sequelize,Op } = require('sequelize');
 const dateTime = require('date-and-time');
 const { encrypt,decrypt} = require('../utils/cryptAndJwt');
 const {generateToken} = require('../utils/cryptAndJwt');
+const {removeOtp} = require('../utils/cron');
 const User = db.user;
 const Otp = db.otp;
 
