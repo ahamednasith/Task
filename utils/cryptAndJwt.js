@@ -6,41 +6,32 @@ const  db = require('../models/index');
 const User = db.user;
 
 const generateToken =(userId,loginDate)=> {
-    console.log(userId);
-    console.log(loginDate)
-    
     var token =jwt.sign({userId:userId},loginDate);
     return token;
     
 };
 
-const verifyToken = (req,res,next) => {
+const verifyToken = async  (req,res,next) => {
     let token = req.headers["x-access-token"];
     if(token){
         tokenPart = token.split(" ");
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
         const userId = decodedToken.userId;
-        console.log(userId)
-        User.findOne({where:{userId:userId}}).then(user =>{
-        console.log(user);
-            if(user){
-                const date = user.loginDate;
-                console.log(date);
-                const loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
-                console.log(loginDate)
-                jwt.verify(token,loginDate,(err,decoded) => {
-                    if(err){
-                        return res.status(404).json({message:"Unauthorized"});
-                    }
-                    req.user = decoded;
-                    next();
-                });
-
-            } else {
-                return res.status(401).json({message:"Access denied"});
-            }
-        });
+        const user = await User.findOne({where:{userId:userId}})
+        if(user){
+            const date = user.loginDate;
+            const loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
+            jwt.verify(token,loginDate,(err) => {
+                if(err){
+                    return res.status(404).json({message:"Unauthorized"});
+                }
+                req.user = user;
+                next();
+            });        
+        } else {
+            return res.status(401).json({message:"Access denied"});
+        }
     }
     else{
         return res.status(401).json({message:"Access denied"});

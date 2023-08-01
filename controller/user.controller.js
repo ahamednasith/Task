@@ -1,10 +1,8 @@
 const db = require('../models');
 const { Sequelize,Op } = require('sequelize');
 const dateTime = require('date-and-time');
-const jwt = require('jsonwebtoken');
 const { encrypt,decrypt} = require('../utils/cryptAndJwt');
 const {generateToken} = require('../utils/cryptAndJwt');
-const path = require('path');
 const User = db.user;
 const Otp = db.otp;
 
