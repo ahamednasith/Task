@@ -3,7 +3,7 @@ const {Op} = require('sequelize');
 const db = require('../models/index');
 const Otp = db.otp;
 
-const removeOtp = async (req,res,next) => {
+const removeOtp = async () => {
     const currentTime = new Date();
     await Otp.destroy({
         where:{
@@ -11,8 +11,7 @@ const removeOtp = async (req,res,next) => {
                 [Op.lte]:currentTime
             }
         }
-    });
-    next();
+    }); 
 }
 
 cron.schedule("*/5 * * * *",removeOtp);
