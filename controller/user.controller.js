@@ -3,6 +3,7 @@ const { Sequelize,Op } = require('sequelize');
 const dateTime = require('date-and-time');
 const jwt = require('jsonwebtoken');
 const { encrypt,decrypt} = require('../utils/cryptAndJwt');
+const {generateToken} = require('../utils/cryptAndJwt');
 const path = require('path');
 const User = db.user;
 const Otp = db.otp;
@@ -12,7 +13,7 @@ const signUp = async (req,res,next) => {
     const autoOtp = Math.floor(100000 + Math.random() * 900000);
     const currentTime = new Date();
     const type = req.body.type;
-    if(type == "Send Otp"){
+    if(type == "SendOtp"){
         const count = await Otp.count({
             where:{
                 phoneNumber,
@@ -22,7 +23,9 @@ const signUp = async (req,res,next) => {
             }
         });
         if(count >= 5){
-            return res.status(404).json({message:"OTP Has Reached Limit.Try Again After 5 Minutes"});
+            return res.status(404).json({
+                statuscode:404,
+                message:"OTP Has Reached Limit.Try Again After 5 Minutes"});
         }
         else{
             const expiredAt = new Date(currentTime.getTime() + 5 * 60000);
@@ -32,10 +35,12 @@ const signUp = async (req,res,next) => {
                 createdAt:new Date(currentTime.getTime()),
                 expiredAt
             });
-            return res.status(200).json({message:"OTP Generated"});
+            return res.status(200).json({
+                statuscode:200,
+                message:"OTP Generated"});
         }
     } 
-    if(type == "Verify Otp"){
+    if(type == "VerifyOtp"){
         const otp = await Otp.findOne({
             where:{
                 phoneNumber:phoneNumber,
@@ -47,7 +52,9 @@ const signUp = async (req,res,next) => {
             }
         });
         if(!otp || currentTime > otp.expiredAt){
-            return res.status(402).json({message:"OTP Has Expired"});
+            return res.status(402).json({
+                statuscode:402,
+                message:"OTP Has Expired"});
         } else{
             const userId = Math.floor(10000000 + Math.random() * 90000000);
             const name = req.body.name;
@@ -56,20 +63,12 @@ const signUp = async (req,res,next) => {
             const loginDate = dateTime.format(new Date(),'YYYY-MM-DD HH:mm:ss');
             const numberExists = await User.findOne({where:{phoneNumber}});
             if(numberExists){
-                const updateUser = await User.update({
+                const user = await User.update({
                     userId,
-                    name,
-                    age,
-                    signUpDate,
                     loginDate
                 },{
                     where:{phoneNumber}
                 });
-                const updatedUser = await User.findOne({
-                    where: { phoneNumber: phoneNumber }
-                });
-                var token =jwt.sign({id:updatedUser.id},loginDate);
-                return res.status(200).json({message:"User Details Uploaded Successfully",accessToken:token});
             } else {
                 const user = await User.create({
                     phoneNumber:phoneNumber,
@@ -79,9 +78,12 @@ const signUp = async (req,res,next) => {
                     signUpDate,
                     loginDate
                 });
-                var token =jwt.sign({id:user.id},loginDate);
-                return res.status(200).json({message:"User Details Uploaded Successfully",accessToken:token});
+               
             }
+            const token = generateToken(userId,loginDate);
+            return res.status(200).json({
+                statuscode:200,
+                message:"User Details Uploaded Successfully",accesstoken:token});
 
         }
     }
@@ -96,7 +98,10 @@ const uploadProfile = async(req,res,next) => {
             id:req.user.id
         }
     });
-    return res.status(200).json("Profile Picture Uploaded");
+    return res.status(200).json({
+        statuscode:200,
+        message:"Profile Picture Uploaded"
+    });
 }
 
 module.exports = {signUp,uploadProfile};

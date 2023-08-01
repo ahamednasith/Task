@@ -1,10 +1,18 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const moment = require('moment');
+const dateTime = require('date-and-time');
 const  db = require('../models/index');
 const User = db.user;
-console.log(User);
-const Otp = db.otp;
+
+const generateToken =(userId,loginDate)=> {
+    console.log(userId);
+    console.log(loginDate)
+    
+    var token =jwt.sign({id:userId},loginDate);
+    return token;
+    
+};
 
 const verifyToken = (req,res,next) => {
     let token = req.headers["x-access-token"];
@@ -13,11 +21,14 @@ const verifyToken = (req,res,next) => {
         token = tokenPart[1];
         const decodedToken = jwt.decode(token);
         const userId = decodedToken.id;
-        User.findOne({where:{id:userId}}).then(user => {
+        console.log(userId)
+        const user = User.findOne({where:{id:userId}})
             if(user){
                 req.user = user;
+                console.log(req.user)
                 const date = user.loginDate;
                 req.loginDate = moment(date).format('YYYY-MM-DD HH:mm:ss');
+                console.log(req.loginDate)
                 jwt.verify(token,req.loginDate,(err,decoded) => {
                     if(err){
                         return res.status(404).json({message:"Unauthorized"});
@@ -25,10 +36,10 @@ const verifyToken = (req,res,next) => {
                     user = decoded;
                     next();
                 });
+
             } else {
                 return res.status(401).json({message:"Access denied"});
-            }        
-        });
+            }
     }
     else{
         return res.status(401).json({message:"Access denied"});
@@ -54,5 +65,5 @@ function decrypt(value){
     return decrypted;
 }
 
-module.exports ={verifyToken,encrypt,decrypt};
+module.exports ={verifyToken,encrypt,decrypt,generateToken};
 
